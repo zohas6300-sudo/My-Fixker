@@ -1,0 +1,127 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Primitive Definitions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'admin@fixker.pk' ||
+        request.auth.token.email == 'zohas6300@gmail.com' ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Rules for Users collection
+    match /users/{userId} {
+      allow read: if isSignedIn() || resource.data.role == 'professional';
+      allow create: if isSignedIn() && (isOwner(userId) || isAdmin()) && isValidUser(incoming());
+      allow update: if isSignedIn() && (isOwner(userId) || isAdmin() || (existing().role == 'professional' && incoming().diff(existing()).affectedKeys().hasAny(['rating', 'reviewCount'])));
+      allow delete: if isAdmin();
+    }
+
+    // Rules for Bookings collection
+    match /bookings/{bookingId} {
+      allow read: if isSignedIn() && (resource.data.customerId == request.auth.uid || resource.data.professionalId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && (incoming().customerId == request.auth.uid || isAdmin()) && isValidBooking(incoming());
+      allow update: if isSignedIn() && (
+        resource.data.customerId == request.auth.uid || resource.data.professionalId == request.auth.uid || isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Rules for Reviews collection
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isSignedIn() && (incoming().customerId == request.auth.uid || isAdmin()) && isValidReview(incoming());
+      allow update: if isSignedIn() && (resource.data.customerId == request.auth.uid || isAdmin()) && isValidReview(incoming());
+      allow delete: if isSignedIn() && (resource.data.customerId == request.auth.uid || isAdmin());
+    }
+
+    // Rules for Notifications collection
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // Rules for Chats collection
+    match /chats/{chatId} {
+      allow read: if isSignedIn() && (resource.data.customerId == request.auth.uid || resource.data.professionalId == request.auth.uid);
+      allow create: if isSignedIn() && (incoming().customerId == request.auth.uid || incoming().professionalId == request.auth.uid) && isValidChat(incoming());
+      allow update: if isSignedIn() && (resource.data.customerId == request.auth.uid || resource.data.professionalId == request.auth.uid) && isValidChat(incoming());
+      allow delete: if false;
+
+      // Subcollection Messages rules
+      match /messages/{messageId} {
+        allow read: if isSignedIn() && (get(/databases/$(database)/documents/chats/$(chatId)).data.customerId == request.auth.uid || get(/databases/$(database)/documents/chats/$(chatId)).data.professionalId == request.auth.uid);
+        allow create: if isSignedIn() && incoming().senderId == request.auth.uid && isValidMessage(incoming());
+        allow update, delete: if false;
+      }
+    }
+
+    // Helper Validations
+    function isValidUser(data) {
+      return data.uid is string && data.uid.size() <= 128
+        && data.email is string && data.email.size() <= 200
+        && data.displayName is string && data.displayName.size() <= 100
+        && data.role is string && (data.role == 'customer' || data.role == 'professional' || data.role == 'admin');
+    }
+
+    function isValidBooking(data) {
+      return data.customerId is string && data.customerId.size() <= 128
+        && data.professionalId is string && data.professionalId.size() <= 128
+        && data.bookingDate is string && data.bookingDate.size() <= 50
+        && data.bookingTime is string && data.bookingTime.size() <= 50
+        && data.status is string && (data.status == 'pending' || data.status == 'approved' || data.status == 'in_progress' || data.status == 'completed' || data.status == 'rejected' || data.status == 'cancelled')
+        && data.price is number;
+    }
+
+    function isValidReview(data) {
+      return data.bookingId is string && data.bookingId.size() <= 128
+        && data.customerId is string && data.customerId.size() <= 128
+        && data.customerName is string && data.customerName.size() <= 100
+        && data.professionalId is string && data.professionalId.size() <= 128
+        && data.rating is number && data.rating >= 1 && data.rating <= 5
+        && data.comment is string && data.comment.size() <= 1000;
+    }
+
+    function isValidChat(data) {
+      return data.customerId is string && data.customerId.size() <= 128
+        && data.professionalId is string && data.professionalId.size() <= 128
+        && data.lastMessage is string && data.lastMessage.size() <= 1000;
+    }
+
+    function isValidMessage(data) {
+      return data.senderId is string && data.senderId.size() <= 128
+        && data.text is string && data.text.size() <= 1000;
+    }
+
+  }
+}

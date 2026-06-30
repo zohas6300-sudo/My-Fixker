@@ -1,0 +1,104 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Plus Jakarta Sans", sans-serif;
+}
+
+/* Smooth scroll & modern focus styling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Elegant keyframes for page loads */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Heading font custom helper */
+h1, h2, h3, h4, h5, h6, .font-space {
+  font-family: 'Plus Jakarta Sans', var(--font-sans);
+  letter-spacing: -0.025em;
+}
+
+/* Premium Warm Minimalist Theme Styles */
+@layer utilities {
+  .text-stroke {
+    -webkit-text-stroke: 1px currentColor;
+  }
+  .shadow-bold {
+    box-shadow: 0 10px 30px -10px rgba(37, 99, 235, 0.08), 0 1px 3px rgba(15, 23, 42, 0.03);
+  }
+  .shadow-bold-lg {
+    box-shadow: 0 20px 40px -15px rgba(37, 99, 235, 0.12), 0 1px 4px rgba(15, 23, 42, 0.04);
+  }
+  .shadow-bold-blue {
+    box-shadow: 0 12px 30px -10px rgba(37, 99, 235, 0.3);
+  }
+  .border-bold {
+    border: 1px solid rgba(226, 232, 240, 0.8);
+  }
+  .border-bold-thick {
+    border: 1px solid rgba(226, 232, 240, 1);
+  }
+}
+
+/* Custom premium transitions and buttons */
+.btn-bold {
+  border: 1px solid transparent;
+  background-color: #2563eb;
+  color: #ffffff;
+  font-weight: 700;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.15);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-bold:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.25);
+  background-color: #1d4ed8;
+}
+.btn-bold:active {
+  transform: translateY(0.5px);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.15);
+}
+
+.card-bold {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 20px;
+}
+.card-bold:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.06), 0 10px 10px -5px rgba(15, 23, 42, 0.02);
+  border-color: rgba(37, 99, 235, 0.25);
+}

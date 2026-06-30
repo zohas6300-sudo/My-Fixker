@@ -1,0 +1,145 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User account information, including customer preferences and professional profiles.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["customer", "professional", "admin"] },
+        "city": { "type": "string" },
+        "createdAt": { "type": "object" },
+        "status": { "type": "string", "enum": ["pending", "approved", "suspended"] },
+        "isVerified": { "type": "boolean" },
+        "category": { "type": "string" },
+        "bio": { "type": "string" },
+        "price": { "type": "number" },
+        "cnic": { "type": "string" },
+        "skills": { "type": "array" },
+        "portfolio": { "type": "array" },
+        "rating": { "type": "number" },
+        "reviewCount": { "type": "number" },
+        "whatsApp": { "type": "string" },
+        "favorites": { "type": "array" },
+        "availabilityDays": { "type": "array" },
+        "availabilityTimes": { "type": "array" }
+      },
+      "required": ["uid", "email", "displayName", "role"]
+    },
+    "Booking": {
+      "title": "Booking Request",
+      "description": "Service scheduling records between customers and professionals.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerId": { "type": "string" },
+        "customerName": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "professionalId": { "type": "string" },
+        "professionalName": { "type": "string" },
+        "professionalCategory": { "type": "string" },
+        "city": { "type": "string" },
+        "bookingDate": { "type": "string" },
+        "bookingTime": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "in_progress", "completed", "rejected", "cancelled"] },
+        "address": { "type": "string" },
+        "notes": { "type": "string" },
+        "price": { "type": "number" },
+        "createdAt": { "type": "object" },
+        "hasReview": { "type": "boolean" },
+        "professionalWhatsApp": { "type": "string" }
+      },
+      "required": ["customerId", "professionalId", "bookingDate", "bookingTime", "status", "price"]
+    },
+    "Review": {
+      "title": "Professional Review",
+      "description": "Customer feedback and ratings submitted for verified professionals.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "bookingId": { "type": "string" },
+        "customerId": { "type": "string" },
+        "customerName": { "type": "string" },
+        "professionalId": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "createdAt": { "type": "object" }
+      },
+      "required": ["bookingId", "customerId", "professionalId", "rating", "comment"]
+    },
+    "Notification": {
+      "title": "Notification Item",
+      "description": "Real-time alerts sent to users regarding booking updates, reviews, and messaging.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "isRead": { "type": "boolean" },
+        "createdAt": { "type": "object" }
+      },
+      "required": ["userId", "title", "message", "isRead"]
+    },
+    "Chat": {
+      "title": "In-App Chat Thread",
+      "description": "Direct communication channels established between customers and professionals.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerId": { "type": "string" },
+        "customerName": { "type": "string" },
+        "customerPhoto": { "type": "string" },
+        "professionalId": { "type": "string" },
+        "professionalName": { "type": "string" },
+        "professionalPhoto": { "type": "string" },
+        "lastMessage": { "type": "string" },
+        "lastMessageAt": { "type": "object" },
+        "lastMessageSenderId": { "type": "string" }
+      },
+      "required": ["customerId", "professionalId", "lastMessage", "lastMessageAt"]
+    },
+    "Message": {
+      "title": "Chat Message Document",
+      "description": "Individual messages sent inside a Chat thread.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "senderId": { "type": "string" },
+        "text": { "type": "string" },
+        "createdAt": { "type": "object" }
+      },
+      "required": ["senderId", "text", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles. Allowed to be read by any signed-in user, written only by profile owner or admin."
+    },
+    "/bookings/{bookingId}": {
+      "schema": "Booking",
+      "description": "Bookings collection. Read and updated by the customer or professional involved, or admin."
+    },
+    "/reviews/{reviewId}": {
+      "schema": "Review",
+      "description": "Customer reviews. Created only after booking completion. Read publicly, written by customer."
+    },
+    "/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "User alerts. Read/written by target user or generated by system action."
+    },
+    "/chats/{chatId}": {
+      "schema": "Chat",
+      "description": "Active in-app chat rooms. Accessible by customer and professional participants."
+    },
+    "/chats/{chatId}/messages/{messageId}": {
+      "schema": "Message",
+      "description": "Individual chat messages within a thread. Signed-in participants can write messages."
+    }
+  }
+}
